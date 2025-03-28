@@ -104,7 +104,7 @@ int main() {
         }
     }
     sort(substrings.begin(), substrings.end(), compareSubstringEntry);
-
+    const int delta = 35;
     // construct rankmap
     unordered_map<uint64_t, int> rankMap;
     if (!substrings.empty()) {
@@ -125,7 +125,7 @@ int main() {
 
     // dp[i][j] represents the matchability of seq2 first i chars and seq1 first j chars 
     vector<vector<bool>> dp(len2 + 1, vector<bool>(len1 + 1, false));
-    vector<vector<Node>> transition(len2 + 1, vector<Node>(len1 + 1));
+    vector<vector<Node>> renew(len2 + 1, vector<Node>(len1 + 1));
     dp[0][0] = true;
 
     for (int i = 1; i <= len2; i++) {
@@ -147,7 +147,7 @@ int main() {
                     for (int pos : entriesByRank[rank]) {
                         if (pos <= len1 && dp[i - segLen][pos]) {
                             dp[i][pos] = true;
-                            transition[i][pos] = Node(pos - segLen + 1, pos, '+');
+                            renew[i][pos] = Node(pos - segLen + 1, pos, '+');
                         }
                     }
                 }
@@ -163,24 +163,24 @@ int main() {
                     for (int pos : entriesByRank[rank]) {
                         if (pos <= len1 && dp[i - segLen][pos]) {
                             dp[i][pos] = true;
-                            transition[i][pos] = Node(pos - segLen + 1, pos, '-');
+                            renew[i][pos] = Node(pos - segLen + 1, pos, '-');
                         }
                     }
                 }
             }
         }
     }
-    int row = len2, col = len1 - 35;
+    int row = len2, col = len1 - delta;
     vector<Node> moves;
     while (row != 0) {
-        if (transition[row][col].left == 0) {
+        if (renew[row][col].left == 0) {
             row--;
             col--;
             continue;
         }
-        moves.push_back(transition[row][col]);
-        int segLen = transition[row][col].right - transition[row][col].left + 1;
-        moves.push_back(Node(row - segLen + 1, row, transition[row][col].dir));
+        moves.push_back(renew[row][col]);
+        int segLen = renew[row][col].right - renew[row][col].left + 1;
+        moves.push_back(Node(row - segLen + 1, row, renew[row][col].dir));
         row -= segLen;
     }
 
